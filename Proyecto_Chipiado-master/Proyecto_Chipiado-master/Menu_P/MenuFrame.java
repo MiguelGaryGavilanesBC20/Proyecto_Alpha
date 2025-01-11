@@ -8,7 +8,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-
+import java.util.HashMap;
+import java.util.Map;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 public class MenuFrame extends JFrame implements ActionListener {
     private JMenuBar mibarra;
@@ -27,11 +30,13 @@ public class MenuFrame extends JFrame implements ActionListener {
     private JTable tablaOculta;
 
     private int contadorJugadores = 1;
+    private Map<String, Integer> contadoresPorEquipo; // Mapa para los contadores de cada equipo
 
     public MenuFrame() {
+        contadoresPorEquipo = new HashMap<>();
         setTitle("Programa de Campeonato de Fútbol");
         setLayout(new BorderLayout());
-        setBounds(100, 100, 1150, 500);
+        setBounds(100, 100, 1150, 1500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         DefaultTableModel modeloTabla1 = new DefaultTableModel();
@@ -73,6 +78,13 @@ public class MenuFrame extends JFrame implements ActionListener {
 
         // Configurar la barra de menú
         configurarMenu();
+        // Guardar datos al cerrar
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                guardarDatosEnArchivo();
+            }
+        });
 
         setVisible(true);
     }
@@ -143,19 +155,39 @@ public class MenuFrame extends JFrame implements ActionListener {
         setJMenuBar(mibarra);
     }
 
-    public int obtenerNumeroJugador() {
-        System.out.println("Número de jugador asignado: " + contadorJugadores);
-        return contadorJugadores++;
+    public int obtenerNumeroJugador(String nombreEquipo) {
+        int contador = contadoresPorEquipo.getOrDefault(nombreEquipo, 0) + 1;
+        contadoresPorEquipo.put(nombreEquipo, contador);
+        System.out.println("Número de jugador asignado para el equipo " + nombreEquipo + ": " + contador);
+        return contador;
+    }
+
+    public void agregarFilaTablaOculta(Object[] data) {
+        modeloTablaOculta.addRow(data);
+        guardarDatosEnArchivo(); // Guardar los datos cada vez que se agregue una fila nueva
+    }
+
+    public void guardarDatosEnArchivo() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("tabla_equipos.txt"))) {
+            for (int i = 0; i < modeloTablaOculta.getRowCount(); i++) {
+                for (int j = 0; j < modeloTablaOculta.getColumnCount(); j++) {
+                    writer.write(modeloTablaOculta.getValueAt(i, j).toString());
+                    if (j < modeloTablaOculta.getColumnCount() - 1) {
+                        writer.write(",");
+                    }
+                }
+                writer.newLine();
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error al guardar los datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void cargarDatosDesdeArchivo() {
-        int maxNumeroJugador = 0;  // Variable para almacenar el mayor número de jugador encontrado
-        int indiceNumeroJugador = 3;  // Índice del número de jugador (cuarta columna)
-
         try (BufferedReader reader = new BufferedReader(new FileReader("tabla_equipos.txt"))) {
             String line;
 
-            // Leer las líneas para cargar los datos y encontrar el mayor número de jugador
+            // Leer las líneas para cargar los datos y encontrar el mayor número de jugador por equipo
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(",");
 
@@ -166,22 +198,24 @@ public class MenuFrame extends JFrame implements ActionListener {
 
                 // Verificar que la línea tenga al menos 3 columnas
                 if (data.length >= 3) {
+                    String nombreEquipo = data[0];
+
                     // Añadir un número de jugador si falta
                     if (data.length < 4) {
-                        maxNumeroJugador++;
+                        int contador = contadoresPorEquipo.getOrDefault(nombreEquipo, 0) + 1;
+                        contadoresPorEquipo.put(nombreEquipo, contador);
                         data = Arrays.copyOf(data, 4);
-                        data[indiceNumeroJugador] = String.valueOf(maxNumeroJugador);
+                        data[3] = String.valueOf(contadoresPorEquipo.get(nombreEquipo));
                     } else {
                         try {
                             // Verificar el número de jugador en el índice correcto
-                            int numeroJugador = Integer.parseInt(data[indiceNumeroJugador]);
-                            if (numeroJugador > maxNumeroJugador) {
-                                maxNumeroJugador = numeroJugador;
-                            }
+                            int numeroJugador = Integer.parseInt(data[3]);
+                            contadoresPorEquipo.put(nombreEquipo, Math.max(contadoresPorEquipo.getOrDefault(nombreEquipo, 0), numeroJugador));
                         } catch (NumberFormatException ex) {
                             System.out.println("Error al leer el número de jugador en la línea: " + line);
-                            maxNumeroJugador++;
-                            data[indiceNumeroJugador] = String.valueOf(maxNumeroJugador);
+                            int contador = contadoresPorEquipo.getOrDefault(nombreEquipo, 0) + 1;
+                            contadoresPorEquipo.put(nombreEquipo, contador);
+                            data[3] = String.valueOf(contadoresPorEquipo.get(nombreEquipo));
                         }
                     }
 
@@ -195,9 +229,9 @@ public class MenuFrame extends JFrame implements ActionListener {
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
 
-        contadorJugadores = maxNumeroJugador + 1;  // Inicializar el contador con el siguiente número
-        System.out.println("Inicializando contador de jugadores en: " + contadorJugadores);  // Mensaje de depuración
+        System.out.println("Contadores de jugadores por equipo: " + contadoresPorEquipo);  // Mensaje de depuración
     }
+
 
 
     public DefaultTableModel getModeloTablaOculta() {

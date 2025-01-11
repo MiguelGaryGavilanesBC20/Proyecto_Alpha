@@ -134,6 +134,10 @@ public class Panel_Jugador extends JPanel implements ActionListener {
 
         setLayout(null);
 
+        this.scrollPaneOculta = new JScrollPane(menuFrame.getTablaOculta());
+        scrollPaneOculta.setBounds(20, 420, 1100, 150);
+        add(scrollPaneOculta);
+
         // Panel de registro
         JLabel lbNombre = new JLabel("Nombre");
         lbNombre.setBounds(50, 20, 120, 20);
@@ -296,7 +300,7 @@ public class Panel_Jugador extends JPanel implements ActionListener {
                 int tarjetasRojas = Integer.parseInt(tarjetasRojasTexto);
                 int minutosJugados = Integer.parseInt(minutosJugadosTexto);
                 int anio = Integer.parseInt(anioTexto);
-                int numeroJugador = menuFrame.obtenerNumeroJugador();
+                int numeroJugador = menuFrame.obtenerNumeroJugador(nombreEquipo);
                 JOptionPane.showMessageDialog(this, "Número de jugador asignado: " + numeroJugador);
 
                 if (anio < 1900 || anio > 2025) {
@@ -325,7 +329,7 @@ public class Panel_Jugador extends JPanel implements ActionListener {
                         categoriaEquipo, nombre, numeroJugador});
 
                 limpiarCampos();
-                guardarDatosEnArchivos();
+                menuFrame.guardarDatosEnArchivo();
                 JOptionPane.showMessageDialog(this, "Jugador registrado exitosamente.");
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Edad, cédula, goles, tarjetas y minutos deben ser números válidos.",

@@ -1,0 +1,8 @@
+Jose Manuel Briones Cañar,23,0937362827,Delantero,23,23,2,123,12 de Marzo del 2022
+rr,22,rr,Delantero,2,2,2,2,1 de Enero del 2002
+weew,22,weew,Delantero,22,2,222,2,1 de Enero del 2002
+Logan,22,0706636557,Delantero,22,3,7,120,1 de Enero del 2012
+Apolinario,27,23424,Delantero,22,22,2,120,1 de Enero del 2007
+Peter,22,06164646,Delantero,22,22,12,120,1 de Enero del 2010
+Miguel Eduardo,22,0706094810,Delantero,500,2,2,3000,1 de Enero del 2012
+Diegito Maradona,55,655555555,Delantero,22,22,22,22,1 de Enero del 2002
